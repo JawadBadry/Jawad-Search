@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jawad's Search</title>
+    <link rel="icon" href="favicon.png" type="image/png">
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            width: 100vw;
+            background-color: #ffffff;
+            overflow: hidden;
+        }
+
+        /* 1. الواجهة الرئيسية (الشكل القديم الكلاسيكي) */
+        .home-view {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            height: 100vh;
+            padding: 20px;
+            background: #ffffff;
+            position: absolute;
+            top: 0;
+            left: 0;
+            z-index: 5;
+        }
+
+        .home-view.hidden {
+            display: none !important;
+        }
+
+        .logo-big {
+            width: 100%;
+            max-width: 240px;
+            height: auto;
+            margin-bottom: 30px;
+        }
+
+        .search-box-container {
+            width: 100%;
+            max-width: 650px;
+            background: #ffffff;
+            padding: 10px;
+        }
+
+        /* 2. واجهة عرض النتائج (الصفحة الثانية) */
+        .results-view {
+            display: none;
+            flex-direction: column;
+            width: 100%;
+            height: 100vh;
+            position: absolute;
+            top: 0;
+            left: 0;
+            background: #ffffff;
+            z-index: 10;
+        }
+
+        .results-view.active {
+            display: flex !important;
+        }
+
+        /* البار العلوي في الصفحة الثانية مرتب لضبط الأزرار يسار البحث تماماً */
+        .navbar {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding: 10px 25px;
+            background: #ffffff;
+            border-bottom: 1px solid #f1f3f4;
+            height: 75px;
+            width: 100%;
+            flex-shrink: 0;
+        }
+
+        /* حاوية صندوق البحث ممتدة لتأخذ المساحة اليمنى */
+        .search-box-wrapper {
+            flex-grow: 1;
+            max-width: 650px;
+        }
+
+        /* مجموعة أزرار التحكم الثابتة - الآن تظهر على يسار صندوق البحث مباشرة */
+        .nav-buttons-group {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+            flex-shrink: 0;
+            margin-right: 25px; /* مسافة بسيطة بينها وبين الصندوق */
+        }
+
+        .nav-btn {
+            background: #f1f3f4;
+            border: none;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            cursor: pointer;
+            font-size: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.2s;
+        }
+
+        .nav-btn:hover {
+            background: #e8eaed;
+        }
+
+        /* حاوية النتائج المنسدلة بالأسفل */
+        .results-container-scroll {
+            flex-grow: 1;
+            width: 100%;
+            overflow-y: auto;
+            padding: 25px 12%;
+            background: #ffffff;
+        }
+
+        /* إخفاء العلامة المائية المزعجة داخل خانة الإدخال */
+        .gsc-control-cse input.gsc-input,
+        input.gsc-input {
+            background-image: none !important;
+            background: transparent !important;
+        }
+
+        /* حجب تذييل براندينج جوجل المتواجد بالأسفل */
+        .gcsc-branding, .gsc-branding,
+        .gcsc-find-more-on-google, .gcsc-find-more-on-google-branding,
+        .gsc-resultsBorders, .gsc-adBlock, .gsc-adBlockVertical,
+        .gsc-wrapper td.gcsc-branding, .gsc-branding-text, .gsc-branding-img,
+        .gs-snippet-metadata-more-actions, .gcsc-more-results-box,
+        div[id*="branding"], div[class*="branding"], div[class*="find-more"] {
+            display: none !important;
+            opacity: 0 !important;
+            visibility: hidden !important;
+            height: 0 !important;
+            padding: 0 !important;
+            margin: 0 !important;
+        }
+
+        .gsc-cursor-box {
+            display: block !important;
+            margin-top: 20px !important;
+        }
+    </style>
+    <!-- كود محرك بحث جوجل التابع لك -->
+    <script async src="https://cse.google.com/cse.js?cx=46cd13f48e3df46e8"></script>
+</head>
+<body>
+
+    <!-- الواجهة الأولى: التصميم القديم (شعار كبير وبحث تحته) -->
+    <div class="home-view" id="homeView">
+        <img class="logo-big" src="faficon.png" alt="Logo">
+        <div class="search-box-container">
+            <div class="gcse-searchbox-only" data-resultsUrl="" data-newWindow="false"></div>
+        </div>
+    </div>
+
+    <!-- الواجهة الثانية: صفحة النتائج والأزرار في المكان الجديد -->
+    <div class="results-view" id="resultsView">
+        <div class="navbar">
+            
+            <!-- 1. صندوق إدخال البحث في اليمين -->
+            <div class="search-box-wrapper">
+                <div class="gcse-searchbox-only" data-resultsUrl="" data-newWindow="false"></div>
+            </div>
+
+            <!-- 2. الأزرار الثابتة تظهر الآن يسار الصندوق مباشرة (مكان الدوائر الزرقاء في صورتك) -->
+            <div class="nav-buttons-group">
+                <button class="nav-btn" onclick="goForward()" title="تقدم للأمام">⬅️</button>
+                <button class="nav-btn" onclick="goBack()" title="رجوع للخلف">➡️</button>
+                <button class="nav-btn" onclick="goHome()" title="الصفحة الرئيسية">🏠</button>
+            </div>
+            
+        </div>
+
+        <div class="results-container-scroll">
+            <div class="gcse-searchresults-only" data-linktarget="_self"></div>
+        </div>
+    </div>
+
+    <script>
+        // دالة تفعيل شاشة النتائج بشكل حاسم
+        function showResultsView() {
+            document.getElementById('homeView').classList.add('hidden');
+            document.getElementById('resultsView').classList.add('active');
+        }
+
+        // فحص مستمر للرابط للتأكد من الانتقال التلقائي عند ضغط Enter أو المكبر
+        function checkSearchQueryInURL() {
+            if (window.location.search.includes('q=') || window.location.hash.includes('q=')) {
+                showResultsView();
+            }
+        }
+
+        window.onload = function() {
+            // فحص فوري عند التحميل
+            checkSearchQueryInURL();
+
+            // فحص دوري سريع جداً كل 20 مللي ثانية لالتقاط حدوث البحث فوراً
+            setInterval(checkSearchQueryInURL, 20);
+
+            // الاستماع المباشر لضغط زر إنتر أو إرسال نموذج البحث
+            document.addEventListener('submit', function() {
+                showResultsView();
+                setTimeout(showResultsView, 40);
+            });
+
+            // الاستماع لضغط زر إنتر من الكيبورد داخل الخانة
+            document.addEventListener('keyup', function(e) {
+                if (e.key === 'Enter') {
+                    showResultsView();
+                    setTimeout(showResultsView, 80);
+                }
+            });
+
+            // تنظيف الحقوق والشعارات المزعجة بالأسفل
+            setInterval(function() {
+                const badElements = document.querySelectorAll('.gcsc-branding, .gsc-branding, .gcsc-find-more-on-google, .gcsc-find-more-on-google-branding');
+                badElements.forEach(el => el.remove());
+
+                const allElements = document.querySelectorAll('.results-view *');
+                allElements.forEach(el => {
+                    if (el.childNodes.length === 1 && el.childNodes[0].nodeType === 3) {
+                        const txt = el.textContent.trim();
+                        if (txt.includes('Search "') || txt.includes('on Google') || txt.includes('Enhanced by')) {
+                            el.style.setProperty('display', 'none', 'important');
+                            if (el.parentElement) el.parentElement.style.setProperty('display', 'none', 'important');
+                        }
+                    }
+                });
+            }, 100);
+        };
+
+        // دالة العودة للرئيسية النظيفة وتصفير البحث
+        function goHome() {
+            window.location.href = window.location.pathname;
+        }
+
+        function goBack() {
+            window.history.back();
+        }
+
+        function goForward() {
+            window.history.forward();
+        }
+    </script>
+
+</body>
+</html>
